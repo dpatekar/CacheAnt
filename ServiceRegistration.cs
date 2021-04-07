@@ -5,11 +5,16 @@ namespace CacheAnt
 {
 	public static class ServiceRegistration
 	{
-		public delegate Assembly[] AutoCachedAssemblies();
-		public static IServiceCollection AddCacheAnt(this IServiceCollection services, params Assembly[] autoCachedAssemblies)
+		public static IServiceCollection AddCacheAnt(this IServiceCollection services, params Assembly[] cacheAntAssemblies)
 		{
+			services.Scan(scan => scan
+				.FromAssemblies(cacheAntAssemblies)
+				.AddClasses(classes => classes.AssignableTo(typeof(AutoCached<>)))
+				.AsSelf()
+				.As<IAutoCached>()
+				.WithTransientLifetime()
+			);
 			services.AddHostedService<CacheAntService>();
-			services.AddTransient<AutoCachedAssemblies>(_ => () => autoCachedAssemblies);
 			return services;
 		}
 	}

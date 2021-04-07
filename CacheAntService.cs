@@ -13,48 +13,38 @@ namespace CacheAnt
 	{
 		private readonly ILogger<CacheAntService> _logger;
 		private readonly IServiceProvider _serviceProvider;
-		private readonly ServiceRegistration.AutoCachedAssemblies _autoCachedAssemblies;
+		private readonly IEnumerable<IAutoCached> _autoCachedInstances;
 		private readonly IList<Timer> _timers;
 
-		public CacheAntService(ILogger<CacheAntService> logger, IServiceProvider serviceProvider, ServiceRegistration.AutoCachedAssemblies autoCachedAssemblies)
+		public CacheAntService(ILogger<CacheAntService> logger, IServiceProvider serviceProvider, IEnumerable<IAutoCached> autoCachedInstances)
 		{
 			_logger = logger;
 			_serviceProvider = serviceProvider;
-			_autoCachedAssemblies = autoCachedAssemblies;
+			_autoCachedInstances = autoCachedInstances;
 			_timers = new List<Timer>();
 		}
 
 		public Task StartAsync(CancellationToken stoppingToken)
 		{
-			var autoCacheTypes = _autoCachedAssemblies().Select(x => x.GetTypes())
-				.SelectMany(x => x)
-				.Where(x => !x.IsGenericType)
-				.Where(x => x.GetInterfaces()
-				.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAutoCached<>)));
-
 			using var outerScope = _serviceProvider.CreateScope();
 
-			foreach (var autoCacheType in autoCacheTypes)
+			foreach (var autoCachedInstance in _autoCachedInstances)
 			{
-				var instance = (IAutoCached)outerScope.ServiceProvider.GetService(autoCacheType);
-				if (instance == null)
-					_logger.LogWarning("{autoRefreshTimerType} is not registered in DI", autoCacheType.Name);
-				else
+				var autoCachedType = autoCachedInstance.GetType();
+				_logger.LogInformation("Setting cache autorefresh timer for {autoRefreshTimerType} every {refreshTimespan}", autoCachedType.Name, autoCachedInstance.AutoRefreshInterval);
+				_timers.Add(new Timer(stateLock =>
 				{
-					_logger.LogInformation("Setting cache autorefresh timer for {autoRefreshTimerType} every {refreshTimespan}", autoCacheType.Name, instance.AutoRefreshInterval);
-					_timers.Add(new Timer(stateLock =>
+					// Ensure that only one timer is active at a time. Ignore the timer execution if the previous is still running.
+					if (Monitor.TryEnter(stateLock))
 					{
-						// Ensure that only one timer is active at a time. Ignore the timer execution if the previous is still running.
-						if (Monitor.TryEnter(stateLock))
-						{
-							_logger.LogInformation("Refreshing {autoRefreshTimerType}", autoCacheType.Name);
-							using var innerScope = _serviceProvider.CreateScope();
-							var threadInstance = (IAutoCached)innerScope.ServiceProvider.GetService(autoCacheType);
-							threadInstance.Refresh();
-							Monitor.Exit(stateLock);
-						}
-					}, new object(), TimeSpan.Zero, instance.AutoRefreshInterval));
-				}
+						_logger.LogInformation("Refreshing {autoRefreshTimerType}", autoCachedType.Name);
+						using var innerScope = _serviceProvider.CreateScope();
+						var threadInstance = (IAutoCached)innerScope.ServiceProvider.GetService(autoCachedType);
+						threadInstance.Refresh();
+						Monitor.Exit(stateLock);
+					}
+				}, new object(), TimeSpan.Zero, autoCachedInstance.AutoRefreshInterval));
+				
 			}
 			return Task.CompletedTask;
 		}
