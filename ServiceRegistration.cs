@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CacheAnt;
 using System.Reflection;
 
-namespace CacheAnt
+namespace Microsoft.Extensions.DependencyInjection
 {
   public static class ServiceRegistration
   {
