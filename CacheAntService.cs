@@ -30,7 +30,7 @@ namespace CacheAnt
       {
         var autoCachedType = autoCachedInstance.GetType();
         _logger.LogInformation("Setting cache autorefresh timer for {autoRefreshTimerType} every {refreshTimespan}", autoCachedType.Name, autoCachedInstance.AutoRefreshInterval);
-        _timers.Add(new Timer(async stateLock =>
+        _timers.Add(new Timer(stateLock =>
         {
           // Ensure that only one timer instance is active at a time. Ignore the timer execution if the previous instance is still running.
           if (Monitor.TryEnter(stateLock))
@@ -38,7 +38,7 @@ namespace CacheAnt
             _logger.LogInformation("Refreshing {autoRefreshTimerType}", autoCachedType.Name);
             using var innerScope = _serviceProvider.CreateScope();
             var threadInstance = (IAutoCached)innerScope.ServiceProvider.GetService(autoCachedType);
-            await threadInstance.Refresh();
+            threadInstance.Refresh();
             Monitor.Exit(stateLock);
           }
         }, new object(), TimeSpan.Zero, autoCachedInstance.AutoRefreshInterval));

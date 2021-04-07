@@ -7,7 +7,7 @@ namespace CacheAnt
   {
     TimeSpan AutoRefreshInterval { get; }
 
-    Task Refresh();
+    void Refresh();
   }
 
   public interface IAutoCached<T> : IAutoCached where T : class

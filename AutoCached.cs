@@ -21,9 +21,9 @@ namespace CacheAnt
         return default(T);
     }
 
-    public async Task Refresh()
+    public void Refresh()
     {
-      var newValue = await Compute();
+      var newValue = Compute().Result;
       _cache[GetType()] = newValue!;
     }
   }
