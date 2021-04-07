@@ -2,14 +2,14 @@
 
 namespace CacheAnt
 {
-  public interface IAutoCached
+  interface IAutoCached
   {
     TimeSpan AutoRefreshInterval { get; }
 
     void Refresh();
   }
 
-  public interface IAutoCached<T> : IAutoCached where T : class
+  interface IAutoCached<T> : IAutoCached where T : class
   {
     T? GetCached();
   }
