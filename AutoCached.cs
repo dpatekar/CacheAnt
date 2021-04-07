@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CacheAnt
 {
@@ -11,7 +10,7 @@ namespace CacheAnt
 
     abstract public TimeSpan AutoRefreshInterval { get; }
 
-    abstract public Task<T> Compute();
+    abstract public T Compute();
 
     public T? GetCached()
     {
@@ -23,7 +22,7 @@ namespace CacheAnt
 
     public void Refresh()
     {
-      var newValue = Compute().Result;
+      var newValue = Compute();
       _cache[GetType()] = newValue!;
     }
   }
