@@ -30,7 +30,7 @@ public class CashedCurrencies : AutoCached<IEnumerable<Currency>>
   }
 }
 ```
-Add CacheAnt:
+Add CacheAnt and pass assemblies containg your AutoCached definitions:
 ```csharp
 services.AddCacheAnt(Assembly.GetExecutingAssembly());
 ```
