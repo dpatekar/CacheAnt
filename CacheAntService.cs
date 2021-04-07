@@ -33,7 +33,7 @@ namespace CacheAnt
         _logger.LogInformation("Setting cache autorefresh timer for {autoRefreshTimerType} every {refreshTimespan}", autoCachedType.Name, autoCachedInstance.AutoRefreshInterval);
         _timers.Add(new Timer(stateLock =>
         {
-          // Ensure that only one timer is active at a time. Ignore the timer execution if the previous is still running.
+          // Ensure that only one timer instance is active at a time. Ignore the timer execution if the previous instance is still running.
           if (Monitor.TryEnter(stateLock))
           {
             _logger.LogInformation("Refreshing {autoRefreshTimerType}", autoCachedType.Name);
