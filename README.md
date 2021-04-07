@@ -1,17 +1,20 @@
 # CacheAnt
 .NET auto-refreshing cache
 
+Very useful for situations where you want to offload cache preloading to a background service and make data instantly available.
+This is a kinda never-expiring, background-refreshing cache. And it's super simple to use :-)
+
 ## Install
-You should install [CacheAnt with NuGet](https://www.nuget.org/packages/CacheAnt):
+Install [CacheAnt with NuGet](https://www.nuget.org/packages/CacheAnt):
 
     Install-Package CacheAnt
 
-Or via the .NET Core command line interface:
+Or via the .NET Core CLI:
 
     dotnet add package CacheAnt
 
 ## Example
-Define a caching definition:
+Create a caching definition:
 ```csharp
 public class CashedCurrencies : AutoCached<IEnumerable<Currency>>
 {
@@ -24,12 +27,14 @@ public class CashedCurrencies : AutoCached<IEnumerable<Currency>>
 
   public override TimeSpan AutoRefreshInterval => TimeSpan.FromSeconds(15);
 
-  public override async Task<IEnumerable<Currency>> Compute()
+  public override IEnumerable<Currency> Compute()
   {
-    return await _dataContext.Currency.AsNoTracking().ToListAsync();
+    return _dataContext.Currency.AsNoTracking().ToList();
   }
 }
 ```
+Here we are caching an IEnumerable\<Currency\>. It could be usefull to cache whole dictionaries also.
+
 Add CacheAnt and pass assemblies containg your AutoCached definitions:
 ```csharp
 services.AddCacheAnt(Assembly.GetExecutingAssembly());
@@ -49,4 +54,4 @@ public class SomeService
 }
 ```
 
-Background IHostedService CacheAntService is created and manages cache refresh in the background. Initial cache loading is done on application start.
+Background IHostedService CacheAntService manages cache and executes refresh at specified intervals. Initial cache loading is done on application start.
