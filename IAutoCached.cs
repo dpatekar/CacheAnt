@@ -3,15 +3,15 @@ using System.Threading.Tasks;
 
 namespace CacheAnt
 {
-	public interface IAutoCached
-	{
-		TimeSpan AutoRefreshInterval { get; }
+  public interface IAutoCached
+  {
+    TimeSpan AutoRefreshInterval { get; }
 
-		Task Refresh();
-	}
+    Task Refresh();
+  }
 
-	public interface IAutoCached<T> : IAutoCached where T : class
-	{
-		T? GetCached();
-	}
+  public interface IAutoCached<T> : IAutoCached where T : class
+  {
+    T? GetCached();
+  }
 }
