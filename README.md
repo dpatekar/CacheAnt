@@ -36,7 +36,7 @@ public class SomeService
     _cashedCurrencies = cashedCurrencies;
   }
 
-  public IEnumerable<Currency> GetCurrencies() => _cashedCurrencies.GetCached();
+  public IEnumerable<Currency> GetCurrencies() => _cashedCurrencies.GetCached() ?? Enumerable.Empty<Currency>();
 }
 ```
 
