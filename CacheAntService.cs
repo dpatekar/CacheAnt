@@ -12,22 +12,21 @@ namespace CacheAnt
   {
     private readonly ILogger<CacheAntService> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IEnumerable<IAutoCached> _autoCachedInstances;
     private readonly IList<Timer> _timers;
 
-    public CacheAntService(ILogger<CacheAntService> logger, IServiceProvider serviceProvider, IEnumerable<IAutoCached> autoCachedInstances)
+    public CacheAntService(ILogger<CacheAntService> logger, IServiceProvider serviceProvider)
     {
       _logger = logger;
       _serviceProvider = serviceProvider;
-      _autoCachedInstances = autoCachedInstances;
       _timers = new List<Timer>();
     }
 
     public Task StartAsync(CancellationToken stoppingToken)
     {
       using var outerScope = _serviceProvider.CreateScope();
+      var autoCachedInstances = outerScope.ServiceProvider.GetRequiredService<IEnumerable<IAutoCached>>();
 
-      foreach (var autoCachedInstance in _autoCachedInstances)
+      foreach (var autoCachedInstance in autoCachedInstances)
       {
         var autoCachedType = autoCachedInstance.GetType();
         _logger.LogInformation("Setting cache autorefresh timer for {autoRefreshTimerType} every {refreshTimespan}", autoCachedType.Name, autoCachedInstance.AutoRefreshInterval);
