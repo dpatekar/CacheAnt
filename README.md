@@ -1,7 +1,16 @@
 # CacheAnt
 .NET auto-refreshing cache
 
-# Example
+## Install
+You should install [CacheAnt with NuGet](https://www.nuget.org/packages/CacheAnt):
+
+    Install-Package CacheAnt
+
+Or via the .NET Core command line interface:
+
+    dotnet add package CacheAnt
+
+## Example
 Define a caching definition:
 ```csharp
 public class CashedCurrencies : AutoCached<IEnumerable<Currency>>
