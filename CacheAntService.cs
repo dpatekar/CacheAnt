@@ -38,7 +38,14 @@ namespace CacheAnt
             _logger.LogInformation("Refreshing {autoRefreshTimerType}", autoCachedType.Name);
             using var innerScope = _serviceProvider.CreateScope();
             var threadInstance = (IAutoCached)innerScope.ServiceProvider.GetService(autoCachedType);
-            threadInstance.Refresh();
+            try
+            {
+              threadInstance.Refresh();
+            }
+            catch(Exception ex)
+            {
+              _logger.LogError(ex, "Error executing refresh");
+            }
             Monitor.Exit(stateLock);
           }
         }, new object(), TimeSpan.Zero, autoCachedInstance.AutoRefreshInterval));
