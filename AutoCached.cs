@@ -6,7 +6,7 @@ namespace CacheAnt
 {
   public abstract class AutoCached<T> : IAutoCached<T> where T : class
   {
-    private static readonly IDictionary<object, object> _cache = new ConcurrentDictionary<object, object>();
+    private static readonly IDictionary<Type, object> _cache = new ConcurrentDictionary<Type, object>();
 
     abstract public TimeSpan AutoRefreshInterval { get; }
 
@@ -14,8 +14,9 @@ namespace CacheAnt
 
     public T? GetCached()
     {
-      if (_cache.ContainsKey(GetType()))
-        return (T)_cache[GetType()];
+      var instanceType = GetType();
+      if (_cache.ContainsKey(instanceType))
+        return (T)_cache[instanceType];
       else
         return default(T);
     }
